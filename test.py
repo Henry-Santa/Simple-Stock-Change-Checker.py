@@ -11,6 +11,8 @@ ticker = input("Ticker of stock : ")
 url = f'https://api.nasdaq.com/api/quote/{ticker}/info'#?assetclass=stocks'
 urlNew = "https://www.google.com/"
 
+use_simple_trading_stratedgy = False
+
 params = {
     "assetClass" : "stocks"
 }
@@ -30,10 +32,16 @@ headers = {
 }
 global currPrice
 currPrice = 0
+global profit
+profit = 0
+global shares
+shares = 0
 
 #print(response.status_code)
 def Work():
     global currPrice
+    global profit
+    global shares
     try:
         while True:
             response = r.get(url, params=params, headers=headers, verify=False)
@@ -41,14 +49,26 @@ def Work():
             nPrice = float(response.json()["data"]["primaryData"]["lastSalePrice"].replace("$", ""))
             
             if nPrice < currPrice:
+                
+                # 
                 currPrice = nPrice
+                if shares & use_simple_trading_stratedgy:
+                    shares -= 1
+                    profit += currPrice
+
                 print(Fore.RED, "Current price : $", currPrice)
             if nPrice > currPrice:
-                currPrice = nPrice
+
+                if use_simple_trading_stratedgy:
+                    currPrice = nPrice
+                    shares += 2
+                    profit -= currPrice*2
+
                 print(Fore.GREEN, "Current price : $", currPrice)
             time.sleep(0.1)
     except KeyboardInterrupt:
         print(Fore.MAGENTA, "Monitoring Over, Final Price = ", currPrice)
+        if use_simple_trading_stratedgy: print("Profit : ", profit + shares*currPrice, shares)
         print(Fore.RESET, Back.RESET)
     except ConnectionError as e:
         #print("Connection Failed : ", e)
