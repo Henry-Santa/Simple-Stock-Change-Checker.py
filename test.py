@@ -45,22 +45,20 @@ def Work():
     try:
         while True:
             response = r.get(url, params=params, headers=headers, verify=False)
+            oldPrice = currPrice
+            currPrice = float(response.json()["data"]["primaryData"]["lastSalePrice"].replace("$", ""))
             
-            nPrice = float(response.json()["data"]["primaryData"]["lastSalePrice"].replace("$", ""))
-            
-            if nPrice < currPrice:
+            if oldPrice > currPrice:
                 
                 # 
-                currPrice = nPrice
                 if shares & use_simple_trading_stratedgy:
                     shares -= 1
                     profit += currPrice
 
                 print(Fore.RED, "Current price : $", currPrice)
-            if nPrice > currPrice:
+            if currPrice > oldPrice:
 
                 if use_simple_trading_stratedgy:
-                    currPrice = nPrice
                     shares += 2
                     profit -= currPrice*2
 
